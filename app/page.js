@@ -6,6 +6,7 @@ import { supabase } from "../lib/supabase";
 export default function Home() {
   const [clients, setClients] = useState([]);
   const [dossiers, setDossiers] = useState([]);
+  const [taches, setTaches] = useState([]);
   const [selectedClient, setSelectedClient] = useState(null);
   const [menu, setMenu] = useState("clients");
 
@@ -20,12 +21,20 @@ export default function Home() {
 
   async function openClient(client) {
     setSelectedClient(client);
-    const { data } = await supabase
+
+    const { data: d } = await supabase
       .from("dossiers")
       .select("*")
       .eq("entite_id", client.id);
 
-    setDossiers(data || []);
+    setDossiers(d || []);
+
+    const { data: t } = await supabase
+      .from("taches")
+      .select("*")
+      .eq("entite_id", client.id);
+
+    setTaches(t || []);
   }
 
   return (
@@ -37,6 +46,7 @@ export default function Home() {
       </div>
 
       <div style={{ flex: 1, padding: 40 }}>
+
         {menu === "clients" && !selectedClient && (
           <div>
             <h1>Clients</h1>
@@ -59,22 +69,37 @@ export default function Home() {
         {selectedClient && (
           <div>
             <button onClick={() => setSelectedClient(null)}>← Retour</button>
-            <h1>Dossiers de {selectedClient.nom}</h1>
 
+            <h1>Dossiers de {selectedClient.nom}</h1>
             {dossiers.map(d => (
               <div key={d.id}
                    style={{
-                     padding: 15,
+                     padding: 10,
                      border: "1px solid #ddd",
                      marginTop: 10
                    }}>
                 {d.nom}
               </div>
             ))}
+
+            <h1 style={{ marginTop: 40 }}>Tâches</h1>
+            {taches.map(t => (
+              <div key={t.id}
+                   style={{
+                     padding: 10,
+                     border: "1px solid #ddd",
+                     marginTop: 10
+                   }}>
+                {t.titre}
+              </div>
+            ))}
+
           </div>
         )}
+
       </div>
 
     </div>
   );
+}
 }
