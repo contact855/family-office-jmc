@@ -4,93 +4,55 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 
 export default function Home() {
-  const [clients, setClients] = useState([]);
-  const [dossiers, setDossiers] = useState([]);
   const [taches, setTaches] = useState([]);
-  const [selectedClient, setSelectedClient] = useState(null);
+  const [factures, setFactures] = useState([]);
 
   useEffect(() => {
-    fetchClients();
+    loadDashboard();
   }, []);
 
-  async function fetchClients() {
-    const { data } = await supabase.from("entites").select("*");
-    setClients(data || []);
-  }
-
-  async function openClient(client) {
-    setSelectedClient(client);
-
-    const { data: d } = await supabase
-      .from("dossiers")
-      .select("*")
-      .eq("entite_id", client.id);
-
-    setDossiers(d || []);
-
+  async function loadDashboard() {
     const { data: t } = await supabase
       .from("taches")
       .select("*")
-      .eq("entite_id", client.id);
+      .order("date_echeance", { ascending: true });
+
+    const { data: f } = await supabase
+      .from("factures")
+      .select("*")
+      .order("date_echeance", { ascending: true });
 
     setTaches(t || []);
+    setFactures(f || []);
   }
 
   return (
     <div style={{ padding: 40, fontFamily: "Arial" }}>
-      {!selectedClient && (
-        <div>
-          <h1>Clients</h1>
-          {clients.map((c) => (
-            <div
-              key={c.id}
-              onClick={() => openClient(c)}
-              style={{
-                padding: 15,
-                border: "1px solid #ddd",
-                marginTop: 10,
-                cursor: "pointer",
-              }}
-            >
-              {c.nom}
-            </div>
-          ))}
+      <h1>Dashboard</h1>
+
+      <h2>Tâches à venir</h2>
+      {taches.map(t => (
+        <div key={t.id}
+             style={{
+               padding: 10,
+               border: "1px solid #ddd",
+               marginTop: 10
+             }}>
+          {t.titre}
         </div>
-      )}
+      ))}
 
-      {selectedClient && (
-        <div>
-          <button onClick={() => setSelectedClient(null)}>← Retour</button>
-
-          <h1>Dossiers</h1>
-          {dossiers.map((d) => (
-            <div
-              key={d.id}
-              style={{
-                padding: 10,
-                border: "1px solid #ddd",
-                marginTop: 10,
-              }}
-            >
-              {d.nom}
-            </div>
-          ))}
-
-          <h1 style={{ marginTop: 40 }}>Tâches</h1>
-          {taches.map((t) => (
-            <div
-              key={t.id}
-              style={{
-                padding: 10,
-                border: "1px solid #ddd",
-                marginTop: 10,
-              }}
-            >
-              {t.titre}
-            </div>
-          ))}
+      <h2 style={{ marginTop: 40 }}>Factures à payer</h2>
+      {factures.map(f => (
+        <div key={f.id}
+             style={{
+               padding: 10,
+               border: "1px solid #ddd",
+               marginTop: 10
+             }}>
+          {f.libelle}
         </div>
-      )}
+      ))}
     </div>
   );
 }
