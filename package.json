@@ -1,8 +1,0 @@
-{
-  "name": "family-office-jmc",
-  "private": true,
-  "scripts": {
-    "build": "echo \"Build OK\"",
-    "start": "node server.js"
-  }
-}
