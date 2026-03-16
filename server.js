@@ -1,4 +1,5 @@
 const http = require('http');
+const url = require('url');
 
 const SUPABASE_URL = "https://mjvimzxsfjlkhrzdsqah.supabase.co";
 const SUPABASE_KEY = "sb_publishable_qYTDpvLvStqrTHzPg8ROMQ_Hdolar6x";
@@ -13,8 +14,8 @@ async function getClients() {
   return await res.json();
 }
 
-async function getDossiers() {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/dossiers?select=*`, {
+async function getDossiers(entite_id) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/dossiers?entite_id=eq.${entite_id}`, {
     headers: {
       "apikey": SUPABASE_KEY,
       "Authorization": `Bearer ${SUPABASE_KEY}`
@@ -24,27 +25,32 @@ async function getDossiers() {
 }
 
 const server = http.createServer(async (req, res) => {
+  const query = url.parse(req.url, true).query;
   const clients = await getClients();
-  const dossiers = await getDossiers();
+
+  if (query.client) {
+    const dossiers = await getDossiers(query.client);
+
+    const html = `
+    <html>
+    <body style="font-family:Arial;padding:40px">
+      <h1>Dossiers client</h1>
+      ${dossiers.map(d => `<div>${d.nom}</div>`).join("")}
+      <br><a href="/">← retour</a>
+    </body>
+    </html>
+    `;
+
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end(html);
+    return;
+  }
 
   const html = `
   <html>
-  <head>
-    <title>Family Office JMC</title>
-    <style>
-      body { font-family: Arial; padding: 40px; background: #f4f4f4; }
-      .card { background: white; padding: 20px; margin-bottom: 10px; border-radius: 8px; }
-    </style>
-  </head>
-  <body>
-    <h1>Family Office – JMC</h1>
-
-    <h2>Clients</h2>
-    ${clients.map(c => `<div class="card">${c.nom}</div>`).join("")}
-
-    <h2>Dossiers</h2>
-    ${dossiers.map(d => `<div class="card">${d.nom}</div>`).join("")}
-
+  <body style="font-family:Arial;padding:40px">
+    <h1>Family Office JMC</h1>
+    ${clients.map(c => `<div><a href="?client=${c.id}">${c.nom}</a></div>`).join("")}
   </body>
   </html>
   `;
