@@ -13,8 +13,19 @@ async function getClients() {
   return await res.json();
 }
 
+async function getDossiers() {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/dossiers?select=*`, {
+    headers: {
+      "apikey": SUPABASE_KEY,
+      "Authorization": `Bearer ${SUPABASE_KEY}`
+    }
+  });
+  return await res.json();
+}
+
 const server = http.createServer(async (req, res) => {
   const clients = await getClients();
+  const dossiers = await getDossiers();
 
   const html = `
   <html>
@@ -27,8 +38,13 @@ const server = http.createServer(async (req, res) => {
   </head>
   <body>
     <h1>Family Office – JMC</h1>
+
     <h2>Clients</h2>
     ${clients.map(c => `<div class="card">${c.nom}</div>`).join("")}
+
+    <h2>Dossiers</h2>
+    ${dossiers.map(d => `<div class="card">${d.nom}</div>`).join("")}
+
   </body>
   </html>
   `;
