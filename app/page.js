@@ -11,7 +11,9 @@ export default function Home() {
   const [sousDossiers, setSousDossiers] = useState([]);
   const [selectedSousDossier, setSelectedSousDossier] = useState(null);
   const [taches, setTaches] = useState([]);
+
   const [newTask, setNewTask] = useState("");
+  const [dateEcheance, setDateEcheance] = useState("");
 
   useEffect(() => {
     loadClients();
@@ -60,7 +62,8 @@ export default function Home() {
     const { data } = await supabase
       .from("taches")
       .select("*")
-      .eq("sous_dossier_id", selectedSousDossier.id);
+      .eq("sous_dossier_id", selectedSousDossier.id)
+      .order("date_echeance", { ascending: true });
 
     setTaches(data || []);
   }
@@ -70,10 +73,12 @@ export default function Home() {
 
     await supabase.from("taches").insert({
       titre: newTask,
+      date_echeance: dateEcheance || null,
       sous_dossier_id: selectedSousDossier.id
     });
 
     setNewTask("");
+    setDateEcheance("");
     loadTaches();
   }
 
@@ -139,6 +144,14 @@ export default function Home() {
               placeholder="Nouvelle tâche"
               style={{ padding: 10, width: 300 }}
             />
+
+            <input
+              type="date"
+              value={dateEcheance}
+              onChange={e => setDateEcheance(e.target.value)}
+              style={{ padding: 10, marginLeft: 10 }}
+            />
+
             <button onClick={createTask} style={{ marginLeft: 10 }}>
               Ajouter
             </button>
@@ -147,7 +160,10 @@ export default function Home() {
           {taches.map(t => (
             <div key={t.id}
                  style={{ background: "white", padding: 20, marginTop: 10 }}>
-              {t.titre}
+              <strong>{t.titre}</strong>
+              {t.date_echeance && (
+                <div>Échéance : {t.date_echeance}</div>
+              )}
             </div>
           ))}
         </>
