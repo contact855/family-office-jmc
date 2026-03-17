@@ -69,38 +69,67 @@ export default function Home() {
     );
   }
 
+  function renderDashboard() {
+    return (
+      <>
+        <h1 style={{ fontSize: 32, fontWeight: 600 }}>Dashboard</h1>
+        <p style={{ color: "#6b7280", marginTop: 5 }}>
+          Synthèse de l’activité administrative
+        </p>
+
+        <div style={{ display: "flex", gap: 40, marginTop: 50 }}>
+          {Card("Retards", retards, "#dc2626")}
+          {Card("Urgences", urgentes, "#ea580c")}
+        </div>
+      </>
+    );
+  }
+
+  function ClientsPage() {
+    const [clients, setClients] = useState([]);
+
+    useEffect(() => {
+      loadClients();
+    }, []);
+
+    async function loadClients() {
+      const { data } = await supabase.from("entites").select("*");
+      setClients(data || []);
+    }
+
+    return (
+      <div>
+        <h1 style={{ fontSize: 32, fontWeight: 600 }}>Clients</h1>
+
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, 300px)",
+          gap: 20,
+          marginTop: 40
+        }}>
+          {clients.map(c => (
+            <div key={c.id}
+              style={{
+                background: "white",
+                padding: 25,
+                borderRadius: 14,
+                boxShadow: "0 6px 18px rgba(0,0,0,0.05)",
+                cursor: "pointer"
+              }}>
+              <strong>{c.nom}</strong>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   function renderContent() {
-    if (view === "dashboard") {
-      return (
-        <>
-          <h1 style={{ fontSize: 32, fontWeight: 600 }}>Dashboard</h1>
-          <p style={{ color: "#6b7280", marginTop: 5 }}>
-            Synthèse de l’activité administrative
-          </p>
-
-          <div style={{ display: "flex", gap: 40, marginTop: 50 }}>
-            {Card("Retards", retards, "#dc2626")}
-            {Card("Urgences", urgentes, "#ea580c")}
-          </div>
-        </>
-      );
-    }
-
-    if (view === "clients") {
-      return <h1>Page Clients (à venir)</h1>;
-    }
-
-    if (view === "agenda") {
-      return <h1>Page Agenda (à venir)</h1>;
-    }
-
-    if (view === "factures") {
-      return <h1>Page Factures (à venir)</h1>;
-    }
-
-    if (view === "locations") {
-      return <h1>Page Locations (à venir)</h1>;
-    }
+    if (view === "dashboard") return renderDashboard();
+    if (view === "clients") return <ClientsPage />;
+    if (view === "agenda") return <h1>Agenda (à venir)</h1>;
+    if (view === "factures") return <h1>Factures (à venir)</h1>;
+    if (view === "locations") return <h1>Locations (à venir)</h1>;
   }
 
   function MenuItem(label, key) {
@@ -121,7 +150,6 @@ export default function Home() {
   return (
     <div style={{ display: "flex", height: "100vh", fontFamily: "Inter, Arial", background: "#f3f4f6" }}>
       
-      {/* MENU */}
       <div style={{
         width: 260,
         background: "#0f172a",
@@ -136,7 +164,6 @@ export default function Home() {
         {MenuItem("Locations", "locations")}
       </div>
 
-      {/* CONTENU */}
       <div style={{ flex: 1, padding: 60 }}>
         {renderContent()}
       </div>
