@@ -52,6 +52,30 @@ export default function Home() {
     <div style={{ padding: 40, fontFamily: "Arial" }}>
       <h1>Dashboard</h1>
 
+      <div style={{ marginTop: 20 }}>
+        <input
+          placeholder="Nouvelle tâche"
+          id="newtask"
+          style={{ padding: 10, width: 300 }}
+        />
+        <button
+          style={{ marginLeft: 10 }}
+          onClick={async () => {
+            const titre = document.getElementById("newtask").value;
+
+            await supabase.from("taches").insert({
+              titre,
+              entite_id: "ee859aaa-4572-4fa4-9b6b-656bec11b43c",
+              date_echeance: new Date()
+            });
+
+            location.reload();
+          }}
+        >
+          Ajouter tâche
+        </button>
+      </div>
+
       <h2>Tâches urgentes</h2>
       {taches.map(t => (
         <div key={t.id}
@@ -75,6 +99,29 @@ export default function Home() {
           {f.libelle}
         </div>
       ))}
+
+      <h2 style={{ marginTop: 40 }}>Ajouter une location</h2>
+      <div>
+        <input id="locbien" placeholder="Bien" />
+        <input id="locclient" placeholder="Nom client" />
+        <button
+          onClick={async () => {
+            const bien = document.getElementById("locbien").value;
+            const nom = document.getElementById("locclient").value;
+
+            await supabase.from("locations_saisonnieres").insert({
+              bien,
+              nom_client_location: nom,
+              entite_id: "ee859aaa-4572-4fa4-9b6b-656bec11b43c",
+              date_rappel_acompte: new Date()
+            });
+
+            location.reload();
+          }}
+        >
+          Ajouter location
+        </button>
+      </div>
 
       <h2 style={{ marginTop: 40 }}>Locations urgentes</h2>
       {locations.map(loc => (
