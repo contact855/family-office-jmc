@@ -36,38 +36,21 @@ export default function Home() {
       return diff <= 3;
     });
 
+    const alertesLocations = (l || []).filter(x => {
+      if (!x.date_rappel_acompte) return false;
+      const d = new Date(x.date_rappel_acompte);
+      const diff = (d - today) / (1000 * 60 * 60 * 24);
+      return diff <= 3;
+    });
+
     setTaches(urgentes);
     setFactures(f || []);
-    setLocations(l || []);
+    setLocations(alertesLocations);
   }
 
   return (
     <div style={{ padding: 40, fontFamily: "Arial" }}>
       <h1>Dashboard</h1>
-
-      <div style={{ marginTop: 20 }}>
-        <input
-          placeholder="Nouvelle tâche"
-          id="newtask"
-          style={{ padding: 10, width: 300 }}
-        />
-        <button
-          style={{ marginLeft: 10 }}
-          onClick={async () => {
-            const titre = document.getElementById("newtask").value;
-
-            await supabase.from("taches").insert({
-              titre,
-              entite_id: "ee859aaa-4572-4fa4-9b6b-656bec11b43c",
-              date_echeance: new Date()
-            });
-
-            location.reload();
-          }}
-        >
-          Ajouter
-        </button>
-      </div>
 
       <h2>Tâches urgentes</h2>
       {taches.map(t => (
@@ -93,7 +76,7 @@ export default function Home() {
         </div>
       ))}
 
-      <h2 style={{ marginTop: 40 }}>Locations</h2>
+      <h2 style={{ marginTop: 40 }}>Locations urgentes</h2>
       {locations.map(loc => (
         <div key={loc.id}
              style={{
