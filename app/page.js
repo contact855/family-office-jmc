@@ -1,85 +1,63 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabase";
+
 export default function Home() {
+  const [taches, setTaches] = useState([]);
+  const [factures, setFactures] = useState([]);
+  const [locations, setLocations] = useState([]);
+
+  useEffect(() => {
+    loadDashboard();
+  }, []);
+
+  async function loadDashboard() {
+    const { data: t } = await supabase.from("taches").select("*");
+    const { data: f } = await supabase.from("factures").select("*");
+    const { data: l } = await supabase.from("locations_saisonnieres").select("*");
+
+    const today = new Date();
+
+    const urgentes = (t || []).filter(x => {
+      if (!x.date_echeance) return false;
+      const d = new Date(x.date_echeance);
+      const diff = (d - today) / (1000 * 60 * 60 * 24);
+      return diff <= 3;
+    });
+
+    const rappelsLocations = (l || []).filter(x => {
+      if (!x.date_rappel_acompte) return false;
+      const d = new Date(x.date_rappel_acompte);
+      const diff = (d - today) / (1000 * 60 * 60 * 24);
+      return diff <= 7;
+    });
+
+    setTaches(urgentes);
+    setFactures(f || []);
+    setLocations(rappelsLocations);
+  }
+
   return (
-    <div style={{ display: "flex", fontFamily: "Arial", height: "100vh" }}>
-      
-      {/* MENU */}
-      <div style={{
-        width: 260,
-        background: "#0f172a",
-        color: "white",
-        padding: 20
-      }}>
-        <h2>Family Office</h2>
+    <div style={{ padding: 40, fontFamily: "Arial" }}>
+      <h1>Dashboard</h1>
 
-        <div style={{ marginTop: 40 }}>
-          <p>🏠 Dashboard</p>
-          <p>👤 Clients</p>
-          <p>📁 Dossiers</p>
-          <p>📅 Échéances</p>
-          <p>💰 Factures</p>
-          <p>🏡 Locations</p>
-          <p>⚙️ Paramètres</p>
+      <h2>Tâches urgentes</h2>
+      {taches.map(t => (
+        <div key={t.id}>{t.titre}</div>
+      ))}
+
+      <h2 style={{ marginTop: 40 }}>Factures</h2>
+      {factures.map(f => (
+        <div key={f.id}>{f.libelle}</div>
+      ))}
+
+      <h2 style={{ marginTop: 40 }}>Locations à traiter</h2>
+      {locations.map(loc => (
+        <div key={loc.id}>
+          {loc.bien} - {loc.nom_client_location}
         </div>
-      </div>
-
-      {/* CONTENU */}
-      <div style={{ flex: 1, padding: 40, background: "#f1f5f9" }}>
-        
-        <h1>Dashboard matin</h1>
-
-        {/* URGENCES */}
-        <div style={{
-          background: "white",
-          padding: 20,
-          marginTop: 20,
-          borderRadius: 8
-        }}>
-          <h2>🔴 Urgences</h2>
-
-          <p>Acompte Xaloc à demander</p>
-          <p>Facture EDF client Martin</p>
-          <p>URSSAF client Dupont</p>
-        </div>
-
-        {/* SEMAINE */}
-        <div style={{
-          background: "white",
-          padding: 20,
-          marginTop: 20,
-          borderRadius: 8
-        }}>
-          <h2>🟠 Cette semaine</h2>
-
-          <p>Renouvellement assurance</p>
-          <p>Contrat Mazet</p>
-          <p>Relance banque</p>
-        </div>
-
-        {/* STATS */}
-        <div style={{
-          display: "flex",
-          gap: 20,
-          marginTop: 20
-        }}>
-          <div style={{ background: "white", padding: 20, borderRadius: 8 }}>
-            <h3>Clients</h3>
-            <p style={{ fontSize: 28 }}>15</p>
-          </div>
-
-          <div style={{ background: "white", padding: 20, borderRadius: 8 }}>
-            <h3>Dossiers actifs</h3>
-            <p style={{ fontSize: 28 }}>73</p>
-          </div>
-
-          <div style={{ background: "white", padding: 20, borderRadius: 8 }}>
-            <h3>Locations en cours</h3>
-            <p style={{ fontSize: 28 }}>4</p>
-          </div>
-        </div>
-
-      </div>
+      ))}
     </div>
   );
 }
