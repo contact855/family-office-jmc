@@ -4,13 +4,13 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 
 export default function Home() {
-  const [charges, setCharges] = useState([]);
+  const [timeline, setTimeline] = useState([]);
 
   useEffect(() => {
-    loadCharges();
+    loadTimeline();
   }, []);
 
-  async function loadCharges() {
+  async function loadTimeline() {
     const { data } = await supabase
       .from("taches")
       .select(`
@@ -22,54 +22,45 @@ export default function Home() {
             )
           )
         )
-      `);
+      `)
+      .order("date_echeance", { ascending: true });
+
+    setTimeline(data || []);
+  }
+
+  function getColor(date) {
+    if (!date) return "#e5e7eb";
 
     const today = new Date();
+    const d = new Date(date);
+    const diff = (d - today) / (1000 * 60 * 60 * 24);
 
-    const map = {};
-
-    (data || []).forEach(t => {
-      if (!t.date_echeance) return;
-
-      const client = t.sous_dossiers?.dossiers?.entites?.nom || "Inconnu";
-
-      if (!map[client]) {
-        map[client] = { retard: 0, urgent: 0 };
-      }
-
-      const d = new Date(t.date_echeance);
-      const diff = (d - today) / (1000 * 60 * 60 * 24);
-
-      if (d < today) map[client].retard++;
-      else if (diff <= 3) map[client].urgent++;
-    });
-
-    const result = Object.keys(map).map(c => ({
-      client: c,
-      retard: map[c].retard,
-      urgent: map[c].urgent
-    }));
-
-    setCharges(result);
+    if (d < today) return "#fecaca";
+    if (diff <= 3) return "#fed7aa";
+    return "#e5e7eb";
   }
 
   return (
     <div style={{ padding: 40, fontFamily: "Arial", background: "#f3f4f6", minHeight: "100vh" }}>
-      <h1>Charge cabinet</h1>
+      <h1>Agenda cabinet</h1>
 
-      {charges.map(c => (
+      {timeline.map(t => (
         <div
-          key={c.client}
+          key={t.id}
           style={{
-            background: "white",
+            background: getColor(t.date_echeance),
             padding: 20,
             borderRadius: 10,
             marginTop: 10
           }}
         >
-          <strong>{c.client}</strong>
-          <div style={{ color: "red" }}>Retards : {c.retard}</div>
-          <div style={{ color: "orange" }}>Urgences : {c.urgent}</div>
+          <strong>{t.titre}</strong>
+          <div style={{ fontSize: 13, color: "#6b7280" }}>
+            {t.sous_dossiers?.dossiers?.entites?.nom}
+          </div>
+          <div style={{ fontSize: 12, color: "#9ca3af" }}>
+            Échéance : {t.date_echeance || "—"}
+          </div>
         </div>
       ))}
     </div>
