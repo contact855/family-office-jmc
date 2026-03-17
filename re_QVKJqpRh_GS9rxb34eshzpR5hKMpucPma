@@ -32,7 +32,7 @@ export default async function handler(req, res) {
 
   await resend.emails.send({
     from: "Family Office <onboarding@resend.dev>",
-    to: "TON EMAIL ICI",
+    to: "contact@cgconseils.info",
     subject: "Alertes cabinet",
     html: `
       <h2>Alertes cabinet</h2>
