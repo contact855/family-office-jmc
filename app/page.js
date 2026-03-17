@@ -11,6 +11,7 @@ export default function Home() {
   const [sousDossiers, setSousDossiers] = useState([]);
   const [selectedSousDossier, setSelectedSousDossier] = useState(null);
   const [taches, setTaches] = useState([]);
+  const [newTask, setNewTask] = useState("");
 
   useEffect(() => {
     loadClients();
@@ -51,7 +52,7 @@ export default function Home() {
     setSousDossiers(data || []);
   }
 
-  async function openSousDossier(sd) {
+  function openSousDossier(sd) {
     setSelectedSousDossier(sd);
   }
 
@@ -62,6 +63,18 @@ export default function Home() {
       .eq("sous_dossier_id", selectedSousDossier.id);
 
     setTaches(data || []);
+  }
+
+  async function createTask() {
+    if (!newTask) return;
+
+    await supabase.from("taches").insert({
+      titre: newTask,
+      sous_dossier_id: selectedSousDossier.id
+    });
+
+    setNewTask("");
+    loadTaches();
   }
 
   return (
@@ -119,7 +132,17 @@ export default function Home() {
 
           <h2>Tâches</h2>
 
-          {taches.length === 0 && <p>Aucune tâche</p>}
+          <div style={{ marginTop: 20 }}>
+            <input
+              value={newTask}
+              onChange={e => setNewTask(e.target.value)}
+              placeholder="Nouvelle tâche"
+              style={{ padding: 10, width: 300 }}
+            />
+            <button onClick={createTask} style={{ marginLeft: 10 }}>
+              Ajouter
+            </button>
+          </div>
 
           {taches.map(t => (
             <div key={t.id}
