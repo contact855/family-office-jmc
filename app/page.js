@@ -1,3 +1,4 @@
+const [locations, setLocations] = useState([]);
 "use client";
 
 import { useEffect, useState } from "react";
@@ -10,7 +11,11 @@ export default function Home() {
   useEffect(() => {
     loadDashboard();
   }, []);
+const { data: l } = await supabase
+  .from("locations_saisonnieres")
+  .select("*");
 
+setLocations(l || []);
   async function loadDashboard() {
   const { data: t } = await supabase
     .from("taches")
