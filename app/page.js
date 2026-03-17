@@ -37,7 +37,29 @@ export default function Home() {
   return (
     <div style={{ padding: 40, fontFamily: "Arial" }}>
       <h1>Dashboard</h1>
+<div style={{ marginTop: 20 }}>
+  <input
+    placeholder="Nouvelle tâche"
+    id="newtask"
+    style={{ padding: 10, width: 300 }}
+  />
+  <button
+    style={{ marginLeft: 10 }}
+    onClick={async () => {
+      const titre = document.getElementById("newtask").value;
 
+      await supabase.from("taches").insert({
+        titre,
+        entite_id: "ee859aaa-4572-4fa4-9b6b-656bec11b43c",
+        date_echeance: new Date()
+      });
+
+      location.reload();
+    }}
+  >
+    Ajouter
+  </button>
+</div>
       <h2>Tâches à venir</h2>
       {taches.map(t => (
         <div key={t.id}
