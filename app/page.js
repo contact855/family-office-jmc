@@ -14,6 +14,17 @@ export default function Home() {
 const { data: l } = await supabase
   .from("locations_saisonnieres")
   .select("*");
+<h2 style={{ marginTop: 40 }}>Locations</h2>
+{locations.map(loc => (
+  <div key={loc.id}
+       style={{
+         padding: 10,
+         border: "1px solid #ddd",
+         marginTop: 10
+       }}>
+    {loc.bien} - {loc.nom_client_location}
+  </div>
+))}
 
 setLocations(l || []);
   async function loadDashboard() {
