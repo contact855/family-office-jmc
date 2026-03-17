@@ -9,10 +9,16 @@ export default function Home() {
   const [dossiers, setDossiers] = useState([]);
   const [selectedDossier, setSelectedDossier] = useState(null);
   const [sousDossiers, setSousDossiers] = useState([]);
+  const [selectedSousDossier, setSelectedSousDossier] = useState(null);
+  const [taches, setTaches] = useState([]);
 
   useEffect(() => {
     loadClients();
   }, []);
+
+  useEffect(() => {
+    if (selectedSousDossier) loadTaches();
+  }, [selectedSousDossier]);
 
   async function loadClients() {
     const { data } = await supabase.from("entites").select("*");
@@ -22,7 +28,7 @@ export default function Home() {
   async function openClient(client) {
     setSelectedClient(client);
     setSelectedDossier(null);
-    setSousDossiers([]);
+    setSelectedSousDossier(null);
 
     const { data } = await supabase
       .from("dossiers")
@@ -34,6 +40,7 @@ export default function Home() {
 
   async function openDossier(dossier) {
     setSelectedDossier(dossier);
+    setSelectedSousDossier(null);
 
     const { data } = await supabase
       .from("sous_dossiers")
@@ -42,6 +49,19 @@ export default function Home() {
       .order("ordre_affichage");
 
     setSousDossiers(data || []);
+  }
+
+  async function openSousDossier(sd) {
+    setSelectedSousDossier(sd);
+  }
+
+  async function loadTaches() {
+    const { data } = await supabase
+      .from("taches")
+      .select("*")
+      .eq("sous_dossier_id", selectedSousDossier.id);
+
+    setTaches(data || []);
   }
 
   return (
@@ -76,18 +96,35 @@ export default function Home() {
         </>
       )}
 
-      {selectedDossier && (
+      {selectedDossier && !selectedSousDossier && (
         <>
           <button onClick={() => setSelectedDossier(null)}>← Dossiers</button>
           <h1>{selectedDossier.nom}</h1>
 
           <h2>Sous-dossiers</h2>
-          {sousDossiers.length === 0 && <p>Aucun sous-dossier</p>}
-
           {sousDossiers.map(sd => (
             <div key={sd.id}
-                 style={{ background: "white", padding: 20, marginTop: 10 }}>
+                 onClick={() => openSousDossier(sd)}
+                 style={{ background: "white", padding: 20, marginTop: 10, cursor: "pointer" }}>
               {sd.nom}
+            </div>
+          ))}
+        </>
+      )}
+
+      {selectedSousDossier && (
+        <>
+          <button onClick={() => setSelectedSousDossier(null)}>← Sous-dossiers</button>
+          <h1>{selectedSousDossier.nom}</h1>
+
+          <h2>Tâches</h2>
+
+          {taches.length === 0 && <p>Aucune tâche</p>}
+
+          {taches.map(t => (
+            <div key={t.id}
+                 style={{ background: "white", padding: 20, marginTop: 10 }}>
+              {t.titre}
             </div>
           ))}
         </>
