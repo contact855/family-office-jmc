@@ -8,52 +8,8 @@ export default function Home() {
   const [retards, setRetards] = useState([]);
 
   useEffect(() => {
-    processRecurrence();
     loadDashboard();
   }, []);
-
-  async function processRecurrence() {
-    const { data } = await supabase
-      .from("taches")
-      .select("*")
-      .eq("est_recurrente", true);
-
-    const today = new Date();
-
-    for (let t of data || []) {
-      if (!t.date_echeance) continue;
-
-      const d = new Date(t.date_echeance);
-
-      if (d < today) {
-        let next = new Date(d);
-
-        if (t.frequence_recurrence === "mensuelle") next.setMonth(next.getMonth() + 1);
-        if (t.frequence_recurrence === "trimestrielle") next.setMonth(next.getMonth() + 3);
-        if (t.frequence_recurrence === "annuelle") next.setFullYear(next.getFullYear() + 1);
-
-        const { data: existing } = await supabase
-          .from("taches")
-          .select("id")
-          .eq("titre", t.titre)
-          .eq("date_echeance", next);
-
-        if (!existing || existing.length === 0) {
-          await supabase.from("taches").insert({
-            titre: t.titre,
-            sous_dossier_id: t.sous_dossier_id,
-            date_echeance: next,
-            est_recurrente: true,
-            frequence_recurrence: t.frequence_recurrence
-          });
-        }
-
-        await supabase.from("taches")
-          .update({ est_recurrente: false })
-          .eq("id", t.id);
-      }
-    }
-  }
 
   async function loadDashboard() {
     const { data } = await supabase.from("taches").select("*");
@@ -78,18 +34,65 @@ export default function Home() {
   }
 
   return (
-    <div style={{ padding: 40 }}>
-      <h1>Dashboard intelligent sécurisé</h1>
+    <div style={{ display: "flex", height: "100vh", fontFamily: "Arial" }}>
+      
+      {/* MENU */}
+      <div style={{
+        width: 260,
+        background: "#111827",
+        color: "white",
+        padding: 30
+      }}>
+        <h2>Family Office</h2>
 
-      <h2>🔴 Retards</h2>
-      {retards.map(t => (
-        <div key={t.id}>{t.titre} - {t.date_echeance}</div>
-      ))}
+        <div style={{ marginTop: 40 }}>
+          <p>Dashboard</p>
+          <p>Clients</p>
+          <p>Échéances</p>
+          <p>Factures</p>
+          <p>Locations</p>
+          <p>Paramètres</p>
+        </div>
+      </div>
 
-      <h2>🟠 Urgences</h2>
-      {urgentes.map(t => (
-        <div key={t.id}>{t.titre} - {t.date_echeance}</div>
-      ))}
+      {/* CONTENU */}
+      <div style={{ flex: 1, background: "#f3f4f6", padding: 40 }}>
+        
+        <h1>Dashboard matin</h1>
+
+        <div style={{ display: "flex", gap: 20, marginTop: 30 }}>
+
+          <div style={{
+            background: "white",
+            padding: 20,
+            borderRadius: 10,
+            width: 300
+          }}>
+            <h3>🔴 Retards</h3>
+            {retards.map(t => (
+              <div key={t.id} style={{ marginTop: 10 }}>
+                {t.titre}
+              </div>
+            ))}
+          </div>
+
+          <div style={{
+            background: "white",
+            padding: 20,
+            borderRadius: 10,
+            width: 300
+          }}>
+            <h3>🟠 Urgences</h3>
+            {urgentes.map(t => (
+              <div key={t.id} style={{ marginTop: 10 }}>
+                {t.titre}
+              </div>
+            ))}
+          </div>
+
+        </div>
+
+      </div>
     </div>
   );
 }
