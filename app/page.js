@@ -12,20 +12,28 @@ export default function Home() {
   }, []);
 
   async function loadDashboard() {
-    const { data: t } = await supabase
-      .from("taches")
-      .select("*")
-      .order("date_echeance", { ascending: true });
+  const { data: t } = await supabase
+    .from("taches")
+    .select("*")
+    .order("date_echeance", { ascending: true });
 
-    const { data: f } = await supabase
-      .from("factures")
-      .select("*")
-      .order("date_echeance", { ascending: true });
+  const { data: f } = await supabase
+    .from("factures")
+    .select("*")
+    .order("date_echeance", { ascending: true });
 
-    setTaches(t || []);
-    setFactures(f || []);
-  }
+  const today = new Date();
 
+  const urgentes = (t || []).filter(x => {
+    if (!x.date_echeance) return false;
+    const d = new Date(x.date_echeance);
+    const diff = (d - today) / (1000 * 60 * 60 * 24);
+    return diff <= 3;
+  });
+
+  setTaches(urgentes);
+  setFactures(f || []);
+}
   return (
     <div style={{ padding: 40, fontFamily: "Arial" }}>
       <h1>Dashboard</h1>
