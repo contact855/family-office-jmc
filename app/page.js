@@ -18,6 +18,8 @@ export default function Home() {
 
   const [newTask, setNewTask] = useState("");
   const [dateEcheance, setDateEcheance] = useState("");
+  const [estRecurrente, setEstRecurrente] = useState(false);
+  const [frequence, setFrequence] = useState("mensuelle");
 
   useEffect(() => {
     loadDashboard();
@@ -33,14 +35,14 @@ export default function Home() {
 
     const today = new Date();
 
-    const urg = (data || []).filter(x => {
+    const urg = (data || []).filter((x) => {
       if (!x.date_echeance) return false;
       const d = new Date(x.date_echeance);
       const diff = (d - today) / (1000 * 60 * 60 * 24);
       return diff <= 3 && diff >= 0;
     });
 
-    const ret = (data || []).filter(x => {
+    const ret = (data || []).filter((x) => {
       if (!x.date_echeance) return false;
       const d = new Date(x.date_echeance);
       return d < today;
@@ -102,41 +104,42 @@ export default function Home() {
     await supabase.from("taches").insert({
       titre: newTask,
       date_echeance: dateEcheance || null,
-      sous_dossier_id: selectedSousDossier.id
+      sous_dossier_id: selectedSousDossier.id,
+      est_recurrente: estRecurrente,
+      frequence_recurrence: estRecurrente ? frequence : null,
     });
 
     setNewTask("");
     setDateEcheance("");
+    setEstRecurrente(false);
+    setFrequence("mensuelle");
+
     loadTaches();
     loadDashboard();
   }
 
   return (
     <div style={{ display: "flex", height: "100vh", fontFamily: "Arial" }}>
-      
-      {/* MENU */}
       <div style={{ width: 260, background: "#0f172a", color: "white", padding: 20 }}>
         <h2>Family Office</h2>
         <p style={{ cursor: "pointer" }} onClick={() => setMenu("dashboard")}>Dashboard</p>
         <p style={{ cursor: "pointer" }} onClick={() => setMenu("clients")}>Clients</p>
       </div>
 
-      {/* CONTENU */}
       <div style={{ flex: 1, padding: 40, background: "#f3f4f6" }}>
-
         {menu === "dashboard" && (
           <>
             <h1>Dashboard matin</h1>
 
             <h2>🔴 En retard</h2>
-            {retards.map(t => (
+            {retards.map((t) => (
               <div key={t.id} style={{ background: "white", padding: 20, marginTop: 10 }}>
                 {t.titre} — {t.date_echeance}
               </div>
             ))}
 
             <h2 style={{ marginTop: 40 }}>🟠 Urgences (3 jours)</h2>
-            {urgentes.map(t => (
+            {urgentes.map((t) => (
               <div key={t.id} style={{ background: "white", padding: 20, marginTop: 10 }}>
                 {t.titre} — {t.date_echeance}
               </div>
@@ -149,10 +152,12 @@ export default function Home() {
             {!selectedClient && (
               <>
                 <h1>Clients</h1>
-                {clients.map(c => (
-                  <div key={c.id}
-                       onClick={() => openClient(c)}
-                       style={{ background: "white", padding: 20, marginTop: 10, cursor: "pointer" }}>
+                {clients.map((c) => (
+                  <div
+                    key={c.id}
+                    onClick={() => openClient(c)}
+                    style={{ background: "white", padding: 20, marginTop: 10, cursor: "pointer" }}
+                  >
                     {c.nom}
                   </div>
                 ))}
@@ -164,10 +169,12 @@ export default function Home() {
                 <button onClick={() => setSelectedClient(null)}>← Clients</button>
                 <h1>{selectedClient.nom}</h1>
 
-                {dossiers.map(d => (
-                  <div key={d.id}
-                       onClick={() => openDossier(d)}
-                       style={{ background: "white", padding: 20, marginTop: 10, cursor: "pointer" }}>
+                {dossiers.map((d) => (
+                  <div
+                    key={d.id}
+                    onClick={() => openDossier(d)}
+                    style={{ background: "white", padding: 20, marginTop: 10, cursor: "pointer" }}
+                  >
                     {d.nom}
                   </div>
                 ))}
@@ -179,10 +186,12 @@ export default function Home() {
                 <button onClick={() => setSelectedDossier(null)}>← Dossiers</button>
                 <h1>{selectedDossier.nom}</h1>
 
-                {sousDossiers.map(sd => (
-                  <div key={sd.id}
-                       onClick={() => openSousDossier(sd)}
-                       style={{ background: "white", padding: 20, marginTop: 10, cursor: "pointer" }}>
+                {sousDossiers.map((sd) => (
+                  <div
+                    key={sd.id}
+                    onClick={() => openSousDossier(sd)}
+                    style={{ background: "white", padding: 20, marginTop: 10, cursor: "pointer" }}
+                  >
                     {sd.nom}
                   </div>
                 ))}
@@ -197,32 +206,55 @@ export default function Home() {
                 <div style={{ marginTop: 20 }}>
                   <input
                     value={newTask}
-                    onChange={e => setNewTask(e.target.value)}
+                    onChange={(e) => setNewTask(e.target.value)}
                     placeholder="Nouvelle tâche"
                     style={{ padding: 10 }}
                   />
                   <input
                     type="date"
                     value={dateEcheance}
-                    onChange={e => setDateEcheance(e.target.value)}
+                    onChange={(e) => setDateEcheance(e.target.value)}
                     style={{ padding: 10, marginLeft: 10 }}
                   />
+                  <label style={{ marginLeft: 10 }}>
+                    <input
+                      type="checkbox"
+                      checked={estRecurrente}
+                      onChange={(e) => setEstRecurrente(e.target.checked)}
+                    />
+                    {" "}Récurrente
+                  </label>
+
+                  {estRecurrente && (
+                    <select
+                      value={frequence}
+                      onChange={(e) => setFrequence(e.target.value)}
+                      style={{ padding: 10, marginLeft: 10 }}
+                    >
+                      <option value="mensuelle">Mensuelle</option>
+                      <option value="trimestrielle">Trimestrielle</option>
+                      <option value="annuelle">Annuelle</option>
+                    </select>
+                  )}
+
                   <button onClick={createTask} style={{ marginLeft: 10 }}>
                     Ajouter
                   </button>
                 </div>
 
-                {taches.map(t => (
-                  <div key={t.id}
-                       style={{ background: "white", padding: 20, marginTop: 10 }}>
-                    {t.titre} — {t.date_echeance}
+                {taches.map((t) => (
+                  <div key={t.id} style={{ background: "white", padding: 20, marginTop: 10 }}>
+                    <div><strong>{t.titre}</strong></div>
+                    <div>Échéance : {t.date_echeance || "—"}</div>
+                    <div>
+                      Récurrence : {t.est_recurrente ? t.frequence_recurrence : "Non"}
+                    </div>
                   </div>
                 ))}
               </>
             )}
           </>
         )}
-
       </div>
     </div>
   );
