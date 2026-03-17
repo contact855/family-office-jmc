@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 
 export default function Home() {
-  const [menu, setMenu] = useState("dashboard");
+  const [menu, setMenu] = useState("clients");
   const [clients, setClients] = useState([]);
+  const [selectedClient, setSelectedClient] = useState(null);
+  const [dossiers, setDossiers] = useState([]);
 
   useEffect(() => {
     loadClients();
@@ -14,6 +16,17 @@ export default function Home() {
   async function loadClients() {
     const { data } = await supabase.from("entites").select("*");
     setClients(data || []);
+  }
+
+  async function openClient(client) {
+    setSelectedClient(client);
+
+    const { data } = await supabase
+      .from("dossiers")
+      .select("*")
+      .eq("entite_id", client.id);
+
+    setDossiers(data || []);
   }
 
   return (
@@ -29,7 +42,6 @@ export default function Home() {
         <h2>Family Office</h2>
 
         <div style={{ marginTop: 40 }}>
-          <p style={{ cursor: "pointer" }} onClick={() => setMenu("dashboard")}>🏠 Dashboard</p>
           <p style={{ cursor: "pointer" }} onClick={() => setMenu("clients")}>👤 Clients</p>
         </div>
       </div>
@@ -37,19 +49,13 @@ export default function Home() {
       {/* CONTENU */}
       <div style={{ flex: 1, padding: 40, background: "#f3f4f6" }}>
 
-        {menu === "dashboard" && (
-          <>
-            <h1>Dashboard</h1>
-            <p>Bienvenue dans votre logiciel Family Office</p>
-          </>
-        )}
-
-        {menu === "clients" && (
+        {!selectedClient && (
           <>
             <h1>Clients</h1>
 
             {clients.map(c => (
               <div key={c.id}
+                   onClick={() => openClient(c)}
                    style={{
                      background: "white",
                      padding: 20,
@@ -58,6 +64,28 @@ export default function Home() {
                      cursor: "pointer"
                    }}>
                 {c.nom}
+              </div>
+            ))}
+          </>
+        )}
+
+        {selectedClient && (
+          <>
+            <button onClick={() => setSelectedClient(null)}>← Retour</button>
+
+            <h1>{selectedClient.nom}</h1>
+
+            <h2>Dossiers</h2>
+
+            {dossiers.map(d => (
+              <div key={d.id}
+                   style={{
+                     background: "white",
+                     padding: 20,
+                     marginTop: 10,
+                     borderRadius: 8
+                   }}>
+                {d.nom}
               </div>
             ))}
           </>
