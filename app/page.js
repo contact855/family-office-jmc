@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 
 export default function Home() {
-  const [menu, setMenu] = useState("dashboard");
-
   const [retards, setRetards] = useState([]);
   const [urgentes, setUrgentes] = useState([]);
   const [semaine, setSemaine] = useState([]);
@@ -15,7 +13,20 @@ export default function Home() {
   }, []);
 
   async function loadDashboard() {
-    const { data } = await supabase.from("taches").select("*");
+    const { data } = await supabase
+      .from("taches")
+      .select(`
+        *,
+        sous_dossiers (
+          nom,
+          dossiers (
+            nom,
+            entites (
+              nom
+            )
+          )
+        )
+      `);
 
     const today = new Date();
 
@@ -39,71 +50,44 @@ export default function Home() {
     setSemaine(week);
   }
 
-  return (
-    <div style={{ display: "flex", height: "100vh", fontFamily: "Arial" }}>
-      
-      <div style={{
-        width: 260,
-        background: "#111827",
-        color: "white",
-        padding: 30
+  function TaskCard(t) {
+    return (
+      <div key={t.id} style={{
+        background: "white",
+        padding: 15,
+        borderRadius: 10,
+        marginTop: 10
       }}>
-        <h2>Family Office</h2>
-        <p style={{ cursor: "pointer" }} onClick={() => setMenu("dashboard")}>Dashboard</p>
-        <p>Clients</p>
-        <p>Échéances</p>
-        <p>Factures</p>
-        <p>Locations</p>
+        <strong>{t.titre}</strong>
+        <div style={{ color: "#6b7280", fontSize: 13 }}>
+          {t.sous_dossiers?.dossiers?.entites?.nom}
+        </div>
+        <div style={{ color: "#9ca3af", fontSize: 12 }}>
+          {t.sous_dossiers?.dossiers?.nom} / {t.sous_dossiers?.nom}
+        </div>
       </div>
+    );
+  }
 
-      <div style={{ flex: 1, background: "#f3f4f6", padding: 40 }}>
-        
-        <h1>Dashboard cabinet</h1>
+  return (
+    <div style={{ padding: 40, fontFamily: "Arial", background: "#f3f4f6", minHeight: "100vh" }}>
+      <h1>Dashboard cabinet</h1>
 
-        <div style={{ display: "flex", gap: 20, marginTop: 30 }}>
+      <div style={{ display: "flex", gap: 20, marginTop: 30 }}>
 
-          <div style={{
-            background: "white",
-            padding: 20,
-            borderRadius: 10,
-            width: 300
-          }}>
-            <h3>🔴 Retards</h3>
-            {retards.map(t => (
-              <div key={t.id} style={{ marginTop: 10 }}>
-                {t.titre}
-              </div>
-            ))}
-          </div>
+        <div style={{ width: 300 }}>
+          <h3>🔴 Retards</h3>
+          {retards.map(TaskCard)}
+        </div>
 
-          <div style={{
-            background: "white",
-            padding: 20,
-            borderRadius: 10,
-            width: 300
-          }}>
-            <h3>🟠 Urgent (3 jours)</h3>
-            {urgentes.map(t => (
-              <div key={t.id} style={{ marginTop: 10 }}>
-                {t.titre}
-              </div>
-            ))}
-          </div>
+        <div style={{ width: 300 }}>
+          <h3>🟠 Urgent</h3>
+          {urgentes.map(TaskCard)}
+        </div>
 
-          <div style={{
-            background: "white",
-            padding: 20,
-            borderRadius: 10,
-            width: 300
-          }}>
-            <h3>🟡 Cette semaine</h3>
-            {semaine.map(t => (
-              <div key={t.id} style={{ marginTop: 10 }}>
-                {t.titre}
-              </div>
-            ))}
-          </div>
-
+        <div style={{ width: 300 }}>
+          <h3>🟡 Cette semaine</h3>
+          {semaine.map(TaskCard)}
         </div>
 
       </div>
