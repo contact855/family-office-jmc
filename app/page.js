@@ -34,50 +34,73 @@ export default function Home() {
   }
 
   return (
-    <div style={{ display: "flex", height: "100vh", fontFamily: "Inter, Arial" }}>
+    <div style={{ display: "flex", height: "100vh", fontFamily: "Inter, Arial", background: "#f9fafb" }}>
       
+      {/* MENU */}
       <div style={{
         width: 260,
         background: "#111827",
         color: "white",
-        padding: 30
+        padding: 30,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between"
       }}>
-        <h2>Family Office</h2>
-        <p>Dashboard</p>
-        <p>Clients</p>
-        <p>Agenda</p>
-        <p>Factures</p>
-        <p>Locations</p>
+        <div>
+          <h2 style={{ marginBottom: 40 }}>Family Office</h2>
+
+          <div style={{ opacity: 0.9 }}>
+            <p style={{ marginBottom: 15 }}>Dashboard</p>
+            <p style={{ marginBottom: 15 }}>Clients</p>
+            <p style={{ marginBottom: 15 }}>Agenda</p>
+            <p style={{ marginBottom: 15 }}>Factures</p>
+            <p style={{ marginBottom: 15 }}>Locations</p>
+          </div>
+        </div>
+
+        <div style={{ fontSize: 12, opacity: 0.5 }}>
+          v1 interne
+        </div>
       </div>
 
-      <div style={{ flex: 1, background: "#f3f4f6", padding: 40 }}>
-        <h1>Dashboard</h1>
+      {/* CONTENU */}
+      <div style={{ flex: 1, padding: 50 }}>
+        <h1 style={{ fontSize: 28, fontWeight: 600 }}>Dashboard</h1>
+        <p style={{ color: "#6b7280", marginTop: 5 }}>
+          Vue synthétique de l’activité administrative
+        </p>
 
-        <div style={{ display: "flex", gap: 20, marginTop: 30 }}>
+        <div style={{ display: "flex", gap: 30, marginTop: 40 }}>
           
+          {/* RETARDS */}
           <div style={{
             background: "white",
-            padding: 20,
-            borderRadius: 12,
-            width: 300
+            padding: 25,
+            borderRadius: 14,
+            width: 340,
+            boxShadow: "0 4px 10px rgba(0,0,0,0.05)"
           }}>
-            <h3>🔴 Retards</h3>
+            <h3 style={{ marginBottom: 20 }}>🔴 Retards</h3>
+            {retards.length === 0 && <p style={{ color: "#9ca3af" }}>Aucun retard</p>}
             {retards.map(t => (
-              <div key={t.id} style={{ marginTop: 10 }}>
+              <div key={t.id} style={{ marginBottom: 12 }}>
                 {t.titre}
               </div>
             ))}
           </div>
 
+          {/* URGENCES */}
           <div style={{
             background: "white",
-            padding: 20,
-            borderRadius: 12,
-            width: 300
+            padding: 25,
+            borderRadius: 14,
+            width: 340,
+            boxShadow: "0 4px 10px rgba(0,0,0,0.05)"
           }}>
-            <h3>🟠 Urgences</h3>
+            <h3 style={{ marginBottom: 20 }}>🟠 Urgences</h3>
+            {urgentes.length === 0 && <p style={{ color: "#9ca3af" }}>Aucune urgence</p>}
             {urgentes.map(t => (
-              <div key={t.id} style={{ marginTop: 10 }}>
+              <div key={t.id} style={{ marginBottom: 12 }}>
                 {t.titre}
               </div>
             ))}
