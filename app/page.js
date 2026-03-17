@@ -6,39 +6,17 @@ import { supabase } from "../lib/supabase";
 export default function Home() {
   const [menu, setMenu] = useState("dashboard");
 
-  const [urgentes, setUrgentes] = useState([]);
-  const [retards, setRetards] = useState([]);
-
   const [clients, setClients] = useState([]);
   const [selectedClient, setSelectedClient] = useState(null);
+
   const [dossiers, setDossiers] = useState([]);
+  const [selectedDossier, setSelectedDossier] = useState(null);
+
+  const [sousDossiers, setSousDossiers] = useState([]);
 
   useEffect(() => {
-    loadDashboard();
     loadClients();
   }, []);
-
-  async function loadDashboard() {
-    const { data } = await supabase.from("taches").select("*");
-
-    const today = new Date();
-
-    const urg = (data || []).filter(x => {
-      if (!x.date_echeance) return false;
-      const d = new Date(x.date_echeance);
-      const diff = (d - today) / (1000 * 60 * 60 * 24);
-      return diff <= 3 && diff >= 0;
-    });
-
-    const ret = (data || []).filter(x => {
-      if (!x.date_echeance) return false;
-      const d = new Date(x.date_echeance);
-      return d < today;
-    });
-
-    setUrgentes(urg);
-    setRetards(ret);
-  }
 
   async function loadClients() {
     const { data } = await supabase.from("entites").select("*");
@@ -47,6 +25,7 @@ export default function Home() {
 
   async function openClient(client) {
     setSelectedClient(client);
+    setSelectedDossier(null);
 
     const { data } = await supabase
       .from("dossiers")
@@ -56,10 +35,21 @@ export default function Home() {
     setDossiers(data || []);
   }
 
+  async function openDossier(dossier) {
+    setSelectedDossier(dossier);
+
+    const { data } = await supabase
+      .from("sous_dossiers")
+      .select("*")
+      .eq("dossier_id", dossier.id)
+      .order("ordre_affichage");
+
+    setSousDossiers(data || []);
+  }
+
   return (
     <div style={{ display: "flex", height: "100vh", fontFamily: "Arial" }}>
       
-      {/* MENU */}
       <div style={{
         width: 260,
         background: "#111827",
@@ -74,36 +64,13 @@ export default function Home() {
         </div>
       </div>
 
-      {/* CONTENU */}
       <div style={{ flex: 1, background: "#f3f4f6", padding: 40 }}>
-        
-        {menu === "dashboard" && (
-          <>
-            <h1>Dashboard matin</h1>
-
-            <div style={{ display: "flex", gap: 20, marginTop: 30 }}>
-              <div style={{ background: "white", padding: 20, borderRadius: 10, width: 300 }}>
-                <h3>🔴 Retards</h3>
-                {retards.map(t => (
-                  <div key={t.id} style={{ marginTop: 10 }}>{t.titre}</div>
-                ))}
-              </div>
-
-              <div style={{ background: "white", padding: 20, borderRadius: 10, width: 300 }}>
-                <h3>🟠 Urgences</h3>
-                {urgentes.map(t => (
-                  <div key={t.id} style={{ marginTop: 10 }}>{t.titre}</div>
-                ))}
-              </div>
-            </div>
-          </>
-        )}
 
         {menu === "clients" && !selectedClient && (
           <>
             <h1>Clients</h1>
 
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 20, marginTop: 30 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 20 }}>
               {clients.map(c => (
                 <div key={c.id}
                      onClick={() => openClient(c)}
@@ -116,24 +83,50 @@ export default function Home() {
                        boxShadow: "0 2px 5px rgba(0,0,0,0.1)"
                      }}>
                   <h3>{c.nom}</h3>
-                  <p style={{ color: "#6b7280" }}>Voir dossiers</p>
                 </div>
               ))}
             </div>
           </>
         )}
 
-        {menu === "clients" && selectedClient && (
+        {selectedClient && !selectedDossier && (
           <>
-            <button onClick={() => setSelectedClient(null)}>← Retour</button>
+            <button onClick={() => setSelectedClient(null)}>← Clients</button>
 
-            <h1 style={{ marginTop: 20 }}>{selectedClient.nom}</h1>
+            <h1>{selectedClient.nom}</h1>
 
-            <h2 style={{ marginTop: 30 }}>Dossiers</h2>
+            <h2>Dossiers</h2>
 
             <div style={{ display: "flex", flexWrap: "wrap", gap: 20 }}>
               {dossiers.map(d => (
                 <div key={d.id}
+                     onClick={() => openDossier(d)}
+                     style={{
+                       background: "white",
+                       padding: 20,
+                       borderRadius: 10,
+                       width: 250,
+                       cursor: "pointer",
+                       boxShadow: "0 2px 5px rgba(0,0,0,0.1)"
+                     }}>
+                  <h3>{d.nom}</h3>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {selectedDossier && (
+          <>
+            <button onClick={() => setSelectedDossier(null)}>← Dossiers</button>
+
+            <h1>{selectedDossier.nom}</h1>
+
+            <h2>Sous-dossiers</h2>
+
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 20 }}>
+              {sousDossiers.map(sd => (
+                <div key={sd.id}
                      style={{
                        background: "white",
                        padding: 20,
@@ -141,7 +134,7 @@ export default function Home() {
                        width: 250,
                        boxShadow: "0 2px 5px rgba(0,0,0,0.1)"
                      }}>
-                  <h3>{d.nom}</h3>
+                  <h3>{sd.nom}</h3>
                 </div>
               ))}
             </div>
