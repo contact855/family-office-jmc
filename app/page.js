@@ -23,17 +23,26 @@ export default function Home() {
 
     return (
       <div>
-        <h1>Clients</h1>
-        {clients.map(c => (
-          <div key={c.id}
-            onClick={() => {
-              setSelectedClient(c);
-              setView("dossiers");
-            }}
-            style={{ background: "white", padding: 15, marginTop: 10, cursor: "pointer" }}>
-            {c.nom}
-          </div>
-        ))}
+        <h1 style={{ fontSize: 28 }}>Clients</h1>
+
+        <div style={{ display: "grid", gap: 15, marginTop: 30 }}>
+          {clients.map(c => (
+            <div key={c.id}
+              onClick={() => {
+                setSelectedClient(c);
+                setView("dossiers");
+              }}
+              style={{
+                background: "white",
+                padding: 20,
+                borderRadius: 12,
+                boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+                cursor: "pointer"
+              }}>
+              <strong>{c.nom}</strong>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -56,18 +65,26 @@ export default function Home() {
 
     return (
       <div>
-        <h1>{selectedClient.nom}</h1>
+        <h1 style={{ fontSize: 28 }}>{selectedClient.nom}</h1>
 
-        {dossiers.map(d => (
-          <div key={d.id}
-            onClick={() => {
-              setSelectedDossier(d);
-              setView("sous");
-            }}
-            style={{ background: "white", padding: 15, marginTop: 10, cursor: "pointer" }}>
-            {d.nom}
-          </div>
-        ))}
+        <div style={{ display: "grid", gap: 15, marginTop: 30 }}>
+          {dossiers.map(d => (
+            <div key={d.id}
+              onClick={() => {
+                setSelectedDossier(d);
+                setView("sous");
+              }}
+              style={{
+                background: "white",
+                padding: 20,
+                borderRadius: 12,
+                boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+                cursor: "pointer"
+              }}>
+              {d.nom}
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -90,18 +107,26 @@ export default function Home() {
 
     return (
       <div>
-        <h1>{selectedDossier.nom}</h1>
+        <h1 style={{ fontSize: 28 }}>{selectedDossier.nom}</h1>
 
-        {sous.map(s => (
-          <div key={s.id}
-            onClick={() => {
-              setSelectedSous(s);
-              setView("taches");
-            }}
-            style={{ background: "white", padding: 15, marginTop: 10, cursor: "pointer" }}>
-            {s.nom}
-          </div>
-        ))}
+        <div style={{ display: "grid", gap: 15, marginTop: 30 }}>
+          {sous.map(s => (
+            <div key={s.id}
+              onClick={() => {
+                setSelectedSous(s);
+                setView("taches");
+              }}
+              style={{
+                background: "white",
+                padding: 20,
+                borderRadius: 12,
+                boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+                cursor: "pointer"
+              }}>
+              {s.nom}
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -137,25 +162,47 @@ export default function Home() {
 
     return (
       <div>
-        <h1>{selectedSous.nom}</h1>
+        <h1 style={{ fontSize: 28 }}>{selectedSous.nom}</h1>
 
-        <input
-          value={newTask}
-          onChange={e => setNewTask(e.target.value)}
-          placeholder="Nouvelle tâche"
-          style={{ padding: 10, marginTop: 20 }}
-        />
+        <div style={{ marginTop: 20 }}>
+          <input
+            value={newTask}
+            onChange={e => setNewTask(e.target.value)}
+            placeholder="Nouvelle tâche"
+            style={{
+              padding: 12,
+              borderRadius: 8,
+              border: "1px solid #ddd"
+            }}
+          />
 
-        <button onClick={addTask} style={{ marginLeft: 10 }}>
-          Ajouter
-        </button>
+          <button onClick={addTask}
+            style={{
+              marginLeft: 10,
+              padding: 12,
+              borderRadius: 8,
+              background: "#0f172a",
+              color: "white",
+              border: "none"
+            }}>
+            Ajouter
+          </button>
+        </div>
 
-        {taches.map(t => (
-          <div key={t.id}
-            style={{ background: "white", padding: 15, marginTop: 10 }}>
-            {t.titre}
-          </div>
-        ))}
+        <div style={{ marginTop: 30 }}>
+          {taches.map(t => (
+            <div key={t.id}
+              style={{
+                background: "white",
+                padding: 15,
+                borderRadius: 10,
+                marginTop: 10,
+                boxShadow: "0 3px 8px rgba(0,0,0,0.05)"
+              }}>
+              {t.titre}
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -168,7 +215,12 @@ export default function Home() {
   }
 
   return (
-    <div style={{ padding: 40, fontFamily: "Arial", background: "#f3f4f6", minHeight: "100vh" }}>
+    <div style={{
+      padding: 50,
+      fontFamily: "Inter, Arial",
+      background: "#f3f4f6",
+      minHeight: "100vh"
+    }}>
       {renderContent()}
     </div>
   );
