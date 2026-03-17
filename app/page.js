@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 
 export default function Home() {
+  const [view, setView] = useState("dashboard");
   const [retards, setRetards] = useState([]);
   const [urgentes, setUrgentes] = useState([]);
 
@@ -64,8 +65,56 @@ export default function Home() {
             {t.titre}
           </div>
         ))}
-
       </div>
+    );
+  }
+
+  function renderContent() {
+    if (view === "dashboard") {
+      return (
+        <>
+          <h1 style={{ fontSize: 32, fontWeight: 600 }}>Dashboard</h1>
+          <p style={{ color: "#6b7280", marginTop: 5 }}>
+            Synthèse de l’activité administrative
+          </p>
+
+          <div style={{ display: "flex", gap: 40, marginTop: 50 }}>
+            {Card("Retards", retards, "#dc2626")}
+            {Card("Urgences", urgentes, "#ea580c")}
+          </div>
+        </>
+      );
+    }
+
+    if (view === "clients") {
+      return <h1>Page Clients (à venir)</h1>;
+    }
+
+    if (view === "agenda") {
+      return <h1>Page Agenda (à venir)</h1>;
+    }
+
+    if (view === "factures") {
+      return <h1>Page Factures (à venir)</h1>;
+    }
+
+    if (view === "locations") {
+      return <h1>Page Locations (à venir)</h1>;
+    }
+  }
+
+  function MenuItem(label, key) {
+    return (
+      <p
+        onClick={() => setView(key)}
+        style={{
+          marginBottom: 15,
+          cursor: "pointer",
+          opacity: view === key ? 1 : 0.6
+        }}
+      >
+        {label}
+      </p>
     );
   }
 
@@ -80,24 +129,16 @@ export default function Home() {
         padding: 30
       }}>
         <h2 style={{ marginBottom: 40 }}>Family Office</h2>
-        <p style={{ marginBottom: 15 }}>Dashboard</p>
-        <p style={{ marginBottom: 15 }}>Clients</p>
-        <p style={{ marginBottom: 15 }}>Agenda</p>
-        <p style={{ marginBottom: 15 }}>Factures</p>
-        <p style={{ marginBottom: 15 }}>Locations</p>
+        {MenuItem("Dashboard", "dashboard")}
+        {MenuItem("Clients", "clients")}
+        {MenuItem("Agenda", "agenda")}
+        {MenuItem("Factures", "factures")}
+        {MenuItem("Locations", "locations")}
       </div>
 
       {/* CONTENU */}
       <div style={{ flex: 1, padding: 60 }}>
-        <h1 style={{ fontSize: 32, fontWeight: 600 }}>Dashboard</h1>
-        <p style={{ color: "#6b7280", marginTop: 5 }}>
-          Synthèse de l’activité administrative
-        </p>
-
-        <div style={{ display: "flex", gap: 40, marginTop: 50 }}>
-          {Card("Retards", retards, "#dc2626")}
-          {Card("Urgences", urgentes, "#ea580c")}
-        </div>
+        {renderContent()}
       </div>
     </div>
   );
