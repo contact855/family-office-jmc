@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 
 export default function Home() {
-  const [menu, setMenu] = useState("clients");
   const [clients, setClients] = useState([]);
   const [selectedClient, setSelectedClient] = useState(null);
   const [dossiers, setDossiers] = useState([]);
+  const [selectedDossier, setSelectedDossier] = useState(null);
+  const [sousDossiers, setSousDossiers] = useState([]);
 
   useEffect(() => {
     loadClients();
@@ -20,6 +21,8 @@ export default function Home() {
 
   async function openClient(client) {
     setSelectedClient(client);
+    setSelectedDossier(null);
+    setSousDossiers([]);
 
     const { data } = await supabase
       .from("dossiers")
@@ -29,69 +32,67 @@ export default function Home() {
     setDossiers(data || []);
   }
 
+  async function openDossier(dossier) {
+    setSelectedDossier(dossier);
+
+    const { data } = await supabase
+      .from("sous_dossiers")
+      .select("*")
+      .eq("dossier_id", dossier.id)
+      .order("ordre_affichage");
+
+    setSousDossiers(data || []);
+  }
+
   return (
-    <div style={{ display: "flex", height: "100vh", fontFamily: "Arial" }}>
+    <div style={{ padding: 40, fontFamily: "Arial" }}>
       
-      {/* MENU */}
-      <div style={{
-        width: 260,
-        background: "#0f172a",
-        color: "white",
-        padding: 20
-      }}>
-        <h2>Family Office</h2>
+      {!selectedClient && (
+        <>
+          <h1>Clients</h1>
+          {clients.map(c => (
+            <div key={c.id}
+                 onClick={() => openClient(c)}
+                 style={{ background: "white", padding: 20, marginTop: 10, cursor: "pointer" }}>
+              {c.nom}
+            </div>
+          ))}
+        </>
+      )}
 
-        <div style={{ marginTop: 40 }}>
-          <p style={{ cursor: "pointer" }} onClick={() => setMenu("clients")}>👤 Clients</p>
-        </div>
-      </div>
+      {selectedClient && !selectedDossier && (
+        <>
+          <button onClick={() => setSelectedClient(null)}>← Clients</button>
+          <h1>{selectedClient.nom}</h1>
 
-      {/* CONTENU */}
-      <div style={{ flex: 1, padding: 40, background: "#f3f4f6" }}>
+          <h2>Dossiers</h2>
+          {dossiers.map(d => (
+            <div key={d.id}
+                 onClick={() => openDossier(d)}
+                 style={{ background: "white", padding: 20, marginTop: 10, cursor: "pointer" }}>
+              {d.nom}
+            </div>
+          ))}
+        </>
+      )}
 
-        {!selectedClient && (
-          <>
-            <h1>Clients</h1>
+      {selectedDossier && (
+        <>
+          <button onClick={() => setSelectedDossier(null)}>← Dossiers</button>
+          <h1>{selectedDossier.nom}</h1>
 
-            {clients.map(c => (
-              <div key={c.id}
-                   onClick={() => openClient(c)}
-                   style={{
-                     background: "white",
-                     padding: 20,
-                     marginTop: 10,
-                     borderRadius: 8,
-                     cursor: "pointer"
-                   }}>
-                {c.nom}
-              </div>
-            ))}
-          </>
-        )}
+          <h2>Sous-dossiers</h2>
+          {sousDossiers.length === 0 && <p>Aucun sous-dossier</p>}
 
-        {selectedClient && (
-          <>
-            <button onClick={() => setSelectedClient(null)}>← Retour</button>
+          {sousDossiers.map(sd => (
+            <div key={sd.id}
+                 style={{ background: "white", padding: 20, marginTop: 10 }}>
+              {sd.nom}
+            </div>
+          ))}
+        </>
+      )}
 
-            <h1>{selectedClient.nom}</h1>
-
-            <h2>Dossiers</h2>
-
-            {dossiers.map(d => (
-              <div key={d.id}
-                   style={{
-                     background: "white",
-                     padding: 20,
-                     marginTop: 10,
-                     borderRadius: 8
-                   }}>
-                {d.nom}
-              </div>
-            ))}
-          </>
-        )}
-
-      </div>
     </div>
   );
 }
