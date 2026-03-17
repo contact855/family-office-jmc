@@ -18,10 +18,13 @@ export default function Home() {
       .select(`
         *,
         sous_dossiers (
+          id,
           nom,
           dossiers (
+            id,
             nom,
             entites (
+              id,
               nom
             )
           )
@@ -50,14 +53,25 @@ export default function Home() {
     setSemaine(week);
   }
 
+  function openTask(t) {
+    alert(
+      "Client: " + t.sous_dossiers?.dossiers?.entites?.nom +
+      "\nDossier: " + t.sous_dossiers?.dossiers?.nom +
+      "\nSous-dossier: " + t.sous_dossiers?.nom
+    );
+  }
+
   function TaskCard(t) {
     return (
-      <div key={t.id} style={{
-        background: "white",
-        padding: 15,
-        borderRadius: 10,
-        marginTop: 10
-      }}>
+      <div key={t.id}
+           onClick={() => openTask(t)}
+           style={{
+             background: "white",
+             padding: 15,
+             borderRadius: 10,
+             marginTop: 10,
+             cursor: "pointer"
+           }}>
         <strong>{t.titre}</strong>
         <div style={{ color: "#6b7280", fontSize: 13 }}>
           {t.sous_dossiers?.dossiers?.entites?.nom}
