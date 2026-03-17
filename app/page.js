@@ -1,4 +1,3 @@
-const [locations, setLocations] = useState([]);
 "use client";
 
 import { useEffect, useState } from "react";
@@ -7,76 +6,70 @@ import { supabase } from "../lib/supabase";
 export default function Home() {
   const [taches, setTaches] = useState([]);
   const [factures, setFactures] = useState([]);
+  const [locations, setLocations] = useState([]);
 
   useEffect(() => {
     loadDashboard();
   }, []);
-const { data: l } = await supabase
-  .from("locations_saisonnieres")
-  .select("*");
-<h2 style={{ marginTop: 40 }}>Locations</h2>
-{locations.map(loc => (
-  <div key={loc.id}
-       style={{
-         padding: 10,
-         border: "1px solid #ddd",
-         marginTop: 10
-       }}>
-    {loc.bien} - {loc.nom_client_location}
-  </div>
-))}
 
-setLocations(l || []);
   async function loadDashboard() {
-  const { data: t } = await supabase
-    .from("taches")
-    .select("*")
-    .order("date_echeance", { ascending: true });
+    const { data: t } = await supabase
+      .from("taches")
+      .select("*")
+      .order("date_echeance", { ascending: true });
 
-  const { data: f } = await supabase
-    .from("factures")
-    .select("*")
-    .order("date_echeance", { ascending: true });
+    const { data: f } = await supabase
+      .from("factures")
+      .select("*")
+      .order("date_echeance", { ascending: true });
 
-  const today = new Date();
+    const { data: l } = await supabase
+      .from("locations_saisonnieres")
+      .select("*");
 
-  const urgentes = (t || []).filter(x => {
-    if (!x.date_echeance) return false;
-    const d = new Date(x.date_echeance);
-    const diff = (d - today) / (1000 * 60 * 60 * 24);
-    return diff <= 3;
-  });
+    const today = new Date();
 
-  setTaches(urgentes);
-  setFactures(f || []);
-}
+    const urgentes = (t || []).filter(x => {
+      if (!x.date_echeance) return false;
+      const d = new Date(x.date_echeance);
+      const diff = (d - today) / (1000 * 60 * 60 * 24);
+      return diff <= 3;
+    });
+
+    setTaches(urgentes);
+    setFactures(f || []);
+    setLocations(l || []);
+  }
+
   return (
     <div style={{ padding: 40, fontFamily: "Arial" }}>
       <h1>Dashboard</h1>
-<div style={{ marginTop: 20 }}>
-  <input
-    placeholder="Nouvelle tâche"
-    id="newtask"
-    style={{ padding: 10, width: 300 }}
-  />
-  <button
-    style={{ marginLeft: 10 }}
-    onClick={async () => {
-      const titre = document.getElementById("newtask").value;
 
-      await supabase.from("taches").insert({
-        titre,
-        entite_id: "ee859aaa-4572-4fa4-9b6b-656bec11b43c",
-        date_echeance: new Date()
-      });
+      <div style={{ marginTop: 20 }}>
+        <input
+          placeholder="Nouvelle tâche"
+          id="newtask"
+          style={{ padding: 10, width: 300 }}
+        />
+        <button
+          style={{ marginLeft: 10 }}
+          onClick={async () => {
+            const titre = document.getElementById("newtask").value;
 
-      location.reload();
-    }}
-  >
-    Ajouter
-  </button>
-</div>
-      <h2>Tâches à venir</h2>
+            await supabase.from("taches").insert({
+              titre,
+              entite_id: "ee859aaa-4572-4fa4-9b6b-656bec11b43c",
+              date_echeance: new Date()
+            });
+
+            location.reload();
+          }}
+        >
+          Ajouter
+        </button>
+      </div>
+
+      <h2>Tâches urgentes</h2>
       {taches.map(t => (
         <div key={t.id}
              style={{
@@ -88,7 +81,7 @@ setLocations(l || []);
         </div>
       ))}
 
-      <h2 style={{ marginTop: 40 }}>Factures à payer</h2>
+      <h2 style={{ marginTop: 40 }}>Factures</h2>
       {factures.map(f => (
         <div key={f.id}
              style={{
@@ -97,6 +90,18 @@ setLocations(l || []);
                marginTop: 10
              }}>
           {f.libelle}
+        </div>
+      ))}
+
+      <h2 style={{ marginTop: 40 }}>Locations</h2>
+      {locations.map(loc => (
+        <div key={loc.id}
+             style={{
+               padding: 10,
+               border: "1px solid #ddd",
+               marginTop: 10
+             }}>
+          {loc.bien} - {loc.nom_client_location}
         </div>
       ))}
     </div>
