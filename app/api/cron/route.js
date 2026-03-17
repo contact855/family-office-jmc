@@ -32,7 +32,7 @@ export async function GET() {
 
   await resend.emails.send({
     from: "Family Office <onboarding@resend.dev>",
-    to: "TON_EMAIL_REEL",
+    to: "contact@cgconseils.info",
     subject: "Alertes cabinet",
     html: `
       <h2>Alertes cabinet</h2>
