@@ -4,10 +4,19 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 
 export default function Home() {
-  const [view, setView] = useState("clients");
+  const [view, setView] = useState("dashboard");
   const [selectedClient, setSelectedClient] = useState(null);
   const [selectedDossier, setSelectedDossier] = useState(null);
   const [selectedSous, setSelectedSous] = useState(null);
+
+  function Dashboard() {
+    return (
+      <div>
+        <h1 style={{ fontSize: 32 }}>Dashboard</h1>
+        <p>Bienvenue dans votre logiciel Family Office</p>
+      </div>
+    );
+  }
 
   function ClientsPage() {
     const [clients, setClients] = useState([]);
@@ -25,7 +34,7 @@ export default function Home() {
       <div>
         <h1 style={{ fontSize: 28 }}>Clients</h1>
 
-        <div style={{ display: "grid", gap: 15, marginTop: 30 }}>
+        <div style={{ marginTop: 30 }}>
           {clients.map(c => (
             <div key={c.id}
               onClick={() => {
@@ -34,12 +43,12 @@ export default function Home() {
               }}
               style={{
                 background: "white",
-                padding: 20,
-                borderRadius: 12,
-                boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+                padding: 15,
+                borderRadius: 10,
+                marginTop: 10,
                 cursor: "pointer"
               }}>
-              <strong>{c.nom}</strong>
+              {c.nom}
             </div>
           ))}
         </div>
@@ -65,26 +74,25 @@ export default function Home() {
 
     return (
       <div>
-        <h1 style={{ fontSize: 28 }}>{selectedClient.nom}</h1>
+        <button onClick={() => setView("clients")}>← Retour</button>
+        <h1>{selectedClient.nom}</h1>
 
-        <div style={{ display: "grid", gap: 15, marginTop: 30 }}>
-          {dossiers.map(d => (
-            <div key={d.id}
-              onClick={() => {
-                setSelectedDossier(d);
-                setView("sous");
-              }}
-              style={{
-                background: "white",
-                padding: 20,
-                borderRadius: 12,
-                boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-                cursor: "pointer"
-              }}>
-              {d.nom}
-            </div>
-          ))}
-        </div>
+        {dossiers.map(d => (
+          <div key={d.id}
+            onClick={() => {
+              setSelectedDossier(d);
+              setView("sous");
+            }}
+            style={{
+              background: "white",
+              padding: 15,
+              marginTop: 10,
+              borderRadius: 10,
+              cursor: "pointer"
+            }}>
+            {d.nom}
+          </div>
+        ))}
       </div>
     );
   }
@@ -107,26 +115,25 @@ export default function Home() {
 
     return (
       <div>
-        <h1 style={{ fontSize: 28 }}>{selectedDossier.nom}</h1>
+        <button onClick={() => setView("dossiers")}>← Retour</button>
+        <h1>{selectedDossier.nom}</h1>
 
-        <div style={{ display: "grid", gap: 15, marginTop: 30 }}>
-          {sous.map(s => (
-            <div key={s.id}
-              onClick={() => {
-                setSelectedSous(s);
-                setView("taches");
-              }}
-              style={{
-                background: "white",
-                padding: 20,
-                borderRadius: 12,
-                boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-                cursor: "pointer"
-              }}>
-              {s.nom}
-            </div>
-          ))}
-        </div>
+        {sous.map(s => (
+          <div key={s.id}
+            onClick={() => {
+              setSelectedSous(s);
+              setView("taches");
+            }}
+            style={{
+              background: "white",
+              padding: 15,
+              marginTop: 10,
+              borderRadius: 10,
+              cursor: "pointer"
+            }}>
+            {s.nom}
+          </div>
+        ))}
       </div>
     );
   }
@@ -162,66 +169,70 @@ export default function Home() {
 
     return (
       <div>
-        <h1 style={{ fontSize: 28 }}>{selectedSous.nom}</h1>
+        <button onClick={() => setView("sous")}>← Retour</button>
+        <h1>{selectedSous.nom}</h1>
 
-        <div style={{ marginTop: 20 }}>
-          <input
-            value={newTask}
-            onChange={e => setNewTask(e.target.value)}
-            placeholder="Nouvelle tâche"
-            style={{
-              padding: 12,
-              borderRadius: 8,
-              border: "1px solid #ddd"
-            }}
-          />
+        <input
+          value={newTask}
+          onChange={e => setNewTask(e.target.value)}
+          placeholder="Nouvelle tâche"
+          style={{ padding: 10, marginTop: 20 }}
+        />
 
-          <button onClick={addTask}
+        <button onClick={addTask} style={{ marginLeft: 10 }}>
+          Ajouter
+        </button>
+
+        {taches.map(t => (
+          <div key={t.id}
             style={{
-              marginLeft: 10,
-              padding: 12,
-              borderRadius: 8,
-              background: "#0f172a",
-              color: "white",
-              border: "none"
+              background: "white",
+              padding: 15,
+              marginTop: 10,
+              borderRadius: 10
             }}>
-            Ajouter
-          </button>
-        </div>
-
-        <div style={{ marginTop: 30 }}>
-          {taches.map(t => (
-            <div key={t.id}
-              style={{
-                background: "white",
-                padding: 15,
-                borderRadius: 10,
-                marginTop: 10,
-                boxShadow: "0 3px 8px rgba(0,0,0,0.05)"
-              }}>
-              {t.titre}
-            </div>
-          ))}
-        </div>
+            {t.titre}
+          </div>
+        ))}
       </div>
     );
   }
 
   function renderContent() {
+    if (view === "dashboard") return <Dashboard />;
     if (view === "clients") return <ClientsPage />;
     if (view === "dossiers") return <DossiersPage />;
     if (view === "sous") return <SousPage />;
     if (view === "taches") return <TachesPage />;
   }
 
+  function MenuItem(label, key) {
+    return (
+      <p
+        onClick={() => setView(key)}
+        style={{ marginBottom: 15, cursor: "pointer" }}
+      >
+        {label}
+      </p>
+    );
+  }
+
   return (
-    <div style={{
-      padding: 50,
-      fontFamily: "Inter, Arial",
-      background: "#f3f4f6",
-      minHeight: "100vh"
-    }}>
-      {renderContent()}
+    <div style={{ display: "flex", height: "100vh" }}>
+      <div style={{
+        width: 250,
+        background: "#0f172a",
+        color: "white",
+        padding: 30
+      }}>
+        <h2>Family Office</h2>
+        {MenuItem("Dashboard", "dashboard")}
+        {MenuItem("Clients", "clients")}
+      </div>
+
+      <div style={{ flex: 1, padding: 40, background: "#f3f4f6" }}>
+        {renderContent()}
+      </div>
     </div>
   );
 }
