@@ -5,6 +5,7 @@ import { supabase } from "../lib/supabase";
 
 export default function Home() {
   const [view, setView] = useState("dashboard");
+  const [selectedClient, setSelectedClient] = useState(null);
   const [retards, setRetards] = useState([]);
   const [urgentes, setUrgentes] = useState([]);
 
@@ -16,13 +17,11 @@ export default function Home() {
     const { data } = await supabase.from("taches").select("*");
 
     const today = new Date();
-
     const retard = [];
     const urgent = [];
 
     (data || []).forEach(t => {
       if (!t.date_echeance) return;
-
       const d = new Date(t.date_echeance);
       const diff = (d - today) / (1000 * 60 * 60 * 24);
 
@@ -43,40 +42,23 @@ export default function Home() {
         width: 360,
         boxShadow: "0 8px 25px rgba(0,0,0,0.05)"
       }}>
-        <div style={{
-          fontSize: 14,
-          color: "#6b7280",
-          marginBottom: 10
-        }}>
+        <div style={{ fontSize: 14, color: "#6b7280", marginBottom: 10 }}>
           {title}
         </div>
-
-        <div style={{
-          fontSize: 40,
-          fontWeight: 600,
-          color: color,
-          marginBottom: 20
-        }}>
+        <div style={{ fontSize: 40, fontWeight: 600, color: color, marginBottom: 20 }}>
           {items.length}
         </div>
-
         {items.slice(0, 5).map(t => (
-          <div key={t.id} style={{ marginBottom: 10 }}>
-            {t.titre}
-          </div>
+          <div key={t.id} style={{ marginBottom: 10 }}>{t.titre}</div>
         ))}
       </div>
     );
   }
 
-  function renderDashboard() {
+  function Dashboard() {
     return (
       <>
         <h1 style={{ fontSize: 32, fontWeight: 600 }}>Dashboard</h1>
-        <p style={{ color: "#6b7280", marginTop: 5 }}>
-          Synthèse de l’activité administrative
-        </p>
-
         <div style={{ display: "flex", gap: 40, marginTop: 50 }}>
           {Card("Retards", retards, "#dc2626")}
           {Card("Urgences", urgentes, "#ea580c")}
@@ -99,7 +81,7 @@ export default function Home() {
 
     return (
       <div>
-        <h1 style={{ fontSize: 32, fontWeight: 600 }}>Clients</h1>
+        <h1 style={{ fontSize: 32 }}>Clients</h1>
 
         <div style={{
           display: "grid",
@@ -109,6 +91,10 @@ export default function Home() {
         }}>
           {clients.map(c => (
             <div key={c.id}
+              onClick={() => {
+                setSelectedClient(c);
+                setView("fiche");
+              }}
               style={{
                 background: "white",
                 padding: 25,
@@ -124,9 +110,52 @@ export default function Home() {
     );
   }
 
+  function ClientFiche() {
+    const [dossiers, setDossiers] = useState([]);
+
+    useEffect(() => {
+      loadDossiers();
+    }, []);
+
+    async function loadDossiers() {
+      const { data } = await supabase
+        .from("dossiers")
+        .select("*")
+        .eq("entite_id", selectedClient.id);
+
+      setDossiers(data || []);
+    }
+
+    return (
+      <div>
+        <h1 style={{ fontSize: 32 }}>{selectedClient.nom}</h1>
+
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, 260px)",
+          gap: 20,
+          marginTop: 40
+        }}>
+          {dossiers.map(d => (
+            <div key={d.id}
+              style={{
+                background: "white",
+                padding: 20,
+                borderRadius: 12,
+                boxShadow: "0 4px 10px rgba(0,0,0,0.05)"
+              }}>
+              {d.nom}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   function renderContent() {
-    if (view === "dashboard") return renderDashboard();
+    if (view === "dashboard") return <Dashboard />;
     if (view === "clients") return <ClientsPage />;
+    if (view === "fiche") return <ClientFiche />;
     if (view === "agenda") return <h1>Agenda (à venir)</h1>;
     if (view === "factures") return <h1>Factures (à venir)</h1>;
     if (view === "locations") return <h1>Locations (à venir)</h1>;
@@ -134,14 +163,12 @@ export default function Home() {
 
   function MenuItem(label, key) {
     return (
-      <p
-        onClick={() => setView(key)}
+      <p onClick={() => setView(key)}
         style={{
           marginBottom: 15,
           cursor: "pointer",
           opacity: view === key ? 1 : 0.6
-        }}
-      >
+        }}>
         {label}
       </p>
     );
