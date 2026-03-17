@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 
 export default function Home() {
-  const [menu, setMenu] = useState("dashboard");
   const [urgentes, setUrgentes] = useState([]);
   const [retards, setRetards] = useState([]);
 
@@ -33,13 +32,21 @@ export default function Home() {
         if (t.frequence_recurrence === "trimestrielle") next.setMonth(next.getMonth() + 3);
         if (t.frequence_recurrence === "annuelle") next.setFullYear(next.getFullYear() + 1);
 
-        await supabase.from("taches").insert({
-          titre: t.titre,
-          sous_dossier_id: t.sous_dossier_id,
-          date_echeance: next,
-          est_recurrente: true,
-          frequence_recurrence: t.frequence_recurrence
-        });
+        const { data: existing } = await supabase
+          .from("taches")
+          .select("id")
+          .eq("titre", t.titre)
+          .eq("date_echeance", next);
+
+        if (!existing || existing.length === 0) {
+          await supabase.from("taches").insert({
+            titre: t.titre,
+            sous_dossier_id: t.sous_dossier_id,
+            date_echeance: next,
+            est_recurrente: true,
+            frequence_recurrence: t.frequence_recurrence
+          });
+        }
 
         await supabase.from("taches")
           .update({ est_recurrente: false })
@@ -72,7 +79,7 @@ export default function Home() {
 
   return (
     <div style={{ padding: 40 }}>
-      <h1>Dashboard intelligent</h1>
+      <h1>Dashboard intelligent sécurisé</h1>
 
       <h2>🔴 Retards</h2>
       {retards.map(t => (
