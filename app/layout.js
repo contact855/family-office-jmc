@@ -1,11 +1,13 @@
-export const metadata = {
-  title: "Family Office JMC",
-};
-
 export default function RootLayout({ children }) {
   return (
     <html lang="fr">
-      <body>{children}</body>
+      <body style={{
+        margin: 0,
+        fontFamily: "Inter, system-ui",
+        background: "#f5f7fa"
+      }}>
+        {children}
+      </body>
     </html>
   );
 }
